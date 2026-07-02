@@ -1,0 +1,3 @@
+readme:
+1,download and install filesrv.crt.
+2,download manifest.router.xml, and load it in outlook.
