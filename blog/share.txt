@@ -36,8 +36,6 @@ zerotier-cli deorbit <MoonID>#离开某个Moon节点
 zerotier-cli orbit <MoonID> <MoonID>
 
 
-
-
 ◆FORX !\WinPE\WinPE.INI,MyIni,1,LOAD %MyIni%  
 ※ PECMD中的帮助--表示逆序搜索所有分区WinPE目录下的WinPE.INI，把搜索的第1个WinPE.INI用LOAD命令加载。
 
