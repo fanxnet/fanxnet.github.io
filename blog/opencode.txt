@@ -1,0 +1,69 @@
+Claude Code
+Codex＋CC Switch
+1,https://github.com/anomalyco/opencode
+2,https://github.com/google-gemini/gemini-cli
+3,https://github.com/Aider-AI/aider
+4,https://github.com/cline/cline
+5,https://github.com/OpenHands/OpenHands
+6,
+7,
+8,AtomCode
+
+－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+安装opencode
+法1，sudo npm install -g opencode-ai@latest
+法2，curl -fsSL https://opencode.ai/install | bash
+升级
+opencode upgrade
+
+卸载 OpenCode 并删除所有相关文件。
+opencode uninstall
+
+
+使用
+# Change directory into your codebase
+配置进 ~/.local/share/opencode/auth.json录入密钥，～/.config/opencode/opencode.json配置只写 baseURL、
+opencode auth list    # 查看已存所有服务商密钥
+opencode auth remove deepseek  # 清空该服务商auth存储
+opencode auth login --provider deepseek # 交互式重新录入密钥
+cd /to/your/project
+opencode # 默认模型登入
+cpencode models # 显示可能模型，下面命令按指定模型登入
+opencode --model google/gemini-flash-lite-latest
+opencode --model deepseek/deepseek-v4-flash
+#OpenCode TUI 启动后的主对话输入框,会话第一条指令可以是/sessions，也可 新主题,告诉 AI 你进来想做什么,完成会话上下文创建：
+    读项目：梳理整个项目目录结构
+    改代码：优化这个项目的配置文件
+    查 bug：查找代码里报错的位置
+/sessions #管理,选中session继续工作.
+opencode -c # 启动等价opencode --continue 继续上一次会话，完全不用输任何内容
+opencode session list #列出本机session
+opencode -s 会话ID # 启动指定会话ID
+ 分叉会话（基于当前会话另开分支，不污染原对话）适合：想在现有对话基础上试改方案，又不想覆盖原有上下文
+/fork
+#初始化 OpenCode。
+/init 生成项目 AGENTS.md
+
+工作界面快捷键，
+Ctr+.  #切换系统终端与Tui,
+!command #直接执行系统终端命令
+ALT+ENTER  #行
+
+opencode git init ＃opencode 专属 Git 初始化（智能提交），会自动绑定仓库，后续 commit 可由 AI 自动生成规范提交信息，还会挂载 git 钩子
+可以使用/git命令,或者切换系统终端命令用git 
+
+/thinking
+opencode stats --days 7 # 最近7天统计
+
+
+／／／／／／／／／／／／／／／／／／／／／／／／／／／／／／／／／／／
+1,AI Provider下的Googel gemini接入model,Model下拉菜单包括:gemini-3.5-flash,gemini-flash-latest,gemini-flash-lite-latest,gemini-2.5-pro,默认模型gemini-flash-latest；
+2,修改对 Gemini API key格式验证（仅AIza 或 AQ 开头）
+3,增加deepseek接入,参照gemini.ts,增加deepseek.ts,修改AI Provider，Model下拉菜单包括:deepseek-v4-flash,deepseek-v4-pro,默认模型:deepseek-v4-flash； API密钥格式的硬编码验证，逻辑限制sk-开头;
+4 新增 src/services/ai-service.ts：统一入口，根据 provider 路由到对应服务。      
+5.选中不同AI Provider,gemini api key,deepseek api key能对应保存和调用。
+
+
+
+
+

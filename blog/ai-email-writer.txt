@@ -1,0 +1,172 @@
+ai-email-writer(fork)
+a81c3d4e-5f67-4890-ab12-cd34ef56ab78/dev:b92d4e5f-6a78-4901-bc23-de45fa67bc89
+ai-email-alone
+98af728e-46d1-4390-9696-06a7ca4f5738/dev:db42d064-6dfd-428f-a689-97ddf2d746d3
+
+－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+
+1,AI Provider下的Googel gemini接入model,Model下拉菜单包括:gemini-3.5-flash,gemini-flash-latest,gemini-flash-lite-latest,gemini-2.5-pro,默认模型gemini-flash-latest；
+2,修改对 Gemini API key格式验证（仅AIza 或 AQ 开头）
+3,增加deepseek接入,参照gemini.ts,增加deepseek.ts,修改AI Provider，Model下拉菜单包括:deepseek-v4-flash,deepseek-v4-pro,默认模型:deepseek-v4-flash； API密钥格式的硬编码验证，逻辑限制sk-开头;
+4 新增 src/services/ai-service.ts：统一入口，根据 provider 路由到对应服务。      
+5.选中不同AI Provider,gemini api key,deepseek api key能对应保存和调用。
+
+1.在reply和draft界面,修改对用户输入的instructions模板保存,实现如下功能.
+1.1,自动保存:插件侧栏退出和关闭时,且字数大于20个时,能在本地自动保存,再次打开插件界面同一邮件会话时恢复上一次的instrctions输入内容,自动保存模板文件名指定:auto-时间(年月日时分秒),每个邮件会话仅保存1个,自动保存的模板总数量不超过5个,
+
+在「settings」中添加一个 职业描述（Career Description） 个人档案字段，让 AI 在起草邮件和回复时把它作为基本promotion来输入, Career Description 界面改成与 "Reply instructions" 相同的结构
+
+首先确认我们的理解是否一致:一次交互,指我提问一次+aiy应答一次,两条entry.如果是,我希望我提问10次交互以后,再压缩.可以利用好低价的命中缓存.
+
+
+本次提示词 = 模板(~600 字符)+ 英文邮件正文 2400 + 中文指令 320 + 附加规则/职业档案 ≈ 3100 字符
+→ `30000 + ceil(3100/5000)=1 × 10000 = 40000ms = 恰好 40s,报错"Request timed out after 40s"完全对上。
+
+draft/summarize/translate 的展示本期不改(服务层已流式,后续可直接接);如需本期一并接,请告知。
+1. UI 只接 reply 三条链路的流式展示(推荐,本期),还是 draft/summarize/translate 也一起接?
+2. 出错时半成品预览:清空(推荐)还是保留已收到的部分?
+抓取数据模式改成流式数据onStream,改善timeout误判,导致无效或者反复request
+
+我调查了系统预设的提示词,包括三部分:1,Requirements,2,Additional rules,3,About the sender (career profile "profilename").
+请修改第3项,去掉多余部分"Writeemails from this person's professional...",注入提交内容简化为:
+Role and profile:
+default role 文本 
+
+
+
+src/
+├── commands/
+│   ├── commands.html
+│   └── commands.ts
+├── features/
+│   ├── draft-email.ts
+│   ├── draft-reply.ts
+│   ├── extract-actions.ts
+│   ├── improve-writing.ts
+│   ├── settings.ts
+│   ├── summarize-thread.ts
+│   ├── templates.ts
+│   └── translate.ts
+├── prompts/
+│   └── builder.ts
+├── services/
+│   ├── gemini.ts
+│   ├── gemini.test.ts
+│   └── outlook.ts
+└── taskpane/
+    ├── taskpane.ts
+    ├── taskpane.css
+    └── taskpane.html
+－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+修改模板./manifest.xml,./manifest.dev.xml
+fanxnet
+<Id>a81c3d4e-5f67-4890-ab12-cd34ef56ab78</Id>
+#>uuidgen
+更新<Id>db42d064-6dfd-428f-a689-97ddf2d746d3</Id>
+
+修改./package.json
+    "url": "https://github.com/fanxnet/ai-email-alone.git"
+修改./webpack.config.js
+const urlProd = "https://fanxnet.github.io/ai-email-alone/";
+
+修改./.github/workflows/deploy.yml
+    branches: [master]
+            -e 's|https://fanxnet.github.io/ai-email-alone/|https://fanxnet.github.io/ai-email-alone/dev/|g' \
+            -e 's|db42d064-6dfd-428f-a689-97ddf2d746d3|98af728e-46d1-4390-9696-06a7ca4f5738|' \
+ deploy-prod         keep_files: false
+修改完后编译npm run build
+
+需要修改的地方可能有:
+src/services/gemini.ts修改api接口,不改动gemini.ts文件名；
+src/services/gemini.test.ts修改api接口
+src/features/settings.ts修改UI 逻辑
+src/taskpane/taskpane.ts修改UI
+src/taskpane/taskpane.html修改UI
+
+
+-------------------------------------------
+完整 Sample（首次回复，默认参数）
+Role:As a professional email assistant;xxxxx
+xxxxx
+Requirements:
+- Tone: professional
+- Language：auto,(unless overridden by explicit request in Reply instructions)
+- Address the reply to: Sarah Chen 
+- Write only the reply body (no subject)
+- Reference relevant points from the original email naturally
+- Keep the reply focused and professional,no commentary outside the reply
+Here is the original email you are replying to:
+---
+From: Sarah Chen <sarah.chen@acme.com>
+Subject: Q3 Marketing Plan Review
+
+Hi,
+
+Attached is the Q3 marketing plan for review. Let me know if the budget allocation looks reasonable before we present to the board on Monday.
+
+Thanks,
+Sarah
+---
+xxxxx
+Reply instructions: 
+Confirm I'll review and send feedback by Friday.
+
+Additional rules:
+- Do not add a sign-off or signature (e.g. "Regards", "Sincerely") — the email client will add the signature automatically
+- Do not include placeholder tokens like [Your Name], [Company], or [Recipient]. Use real names from context
+--------------------------------------------
+[1.Base Instruction]
+Role: Professional email assistant specializing in Latin America lane project cargo.
+Core Goal: Handle customer complaints.
+Output Constraints (Strict): Write ONLY the reply body (NO subject, NO sign-off, NO placeholders). Use real names from context.
+Tone: {{TONE}}
+Language: {{LANGUAGE}}
+Reply-to Name: {{REPLY_TO_NAME}}
+
+[2.Original Email]
+[客户原始邮件内容]
+
+[3.Reply Instructions (Follow this strictly)]
+[用户在 Reply instructions 输入框中的填写内容]
+
+[4.Execution Instruction]
+Based on the Original Email and Reply Instructions , draft the final reply. Naturally reference relevant points from the original email. Follow the Tone/Language constraints unless overridden by explicit request in Reply instructions. Do not add commentary outside the reply. Start generating the reply body now unless explicited request in Reply instructions,
+Please refer to the content of the original email, follow the basic requirements (unless otherwise specified in the reply instructions), and focus on the reply instructions, now draft your response.
+请参考原始邮件内容，遵循基本要求(除非回复说明中另有明确要求)，重点围绕回复说明,起草回复。
+-------------------------------------------
+以下是基于系统默认值的 Generate Reply 完整提示词：
+You are a professional email assistant.
+You are a Project supervisor for Latin American lane,project cargo,pricing/operation/control.
+
+Requirements:
+- Tone: professional
+- Language: the same language as the original email
+- Address the reply to: [***原始邮件发件人姓名或邮箱] (this is the person you are replying to, NOT the person the original email was addressed to)
+- Write only the reply body (no subject line needed)
+- Reference relevant points from the original email naturally
+- Keep the reply focused and professional
+- Do not add any commentary outside the reply itself
+
+IMPORTANT — Language rule:
+- Reply in the original email's language.
+- Do not switch to another language merely because the reply instructions above are written in that language.
+- Exception: if the instructions explicitly and deliberately request a specific reply language (e.g. "reply in Spanish" or "用中文回复"), follow that explicit request instead.
+
+Here is the original email you are replying to:
+
+---
+[***原始邮件内容，来自 Outlook 读取的邮件正文]
+---
+
+Reply instructions: [***用户在 Reply instructions 输入框中填写的内容]
+
+Additional rules:
+- Do not include placeholder tokens like [Your Name], [Company], or [Recipient]. Use real names from context or omit the sign-off entirely instead of using placeholders
+- Do not add a sign-off or signature (e.g. "Best regards", "Kind regards", "Sincerely") — the email client will add the signature automatically
+
+
+-------------------------------------------
+
+
+
+

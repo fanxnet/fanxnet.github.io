@@ -1,0 +1,48 @@
+41d49af6c23fef7d
+ irm https://get.activated.win | iex 
+ 
+zerotier之moon服务器配置
+cd /var/lib/zerotier-one
+#zerotier-idtool generate identity.public identity.secret
+zerotier-idtool initmoon identity.public > moon.json
+修改moon.json,只能IP不能用域名,, 
+"stableEndpoints": ["moon_ip/9993"]
+   "stableEndpoints": ["116.77.121.106/9993"]
+
+zerotier-idtool genmoon moon.json
+mkdir moons.d
+mv *.moon moons.d/
+
+拷贝到持久保存路径，
+mkdir /etc/config/zero
+cp -r /var/lib/zerotier-one/* /etc/config/zero/
+
+修改/etc/config/zerotier，使其从持久目录加载配置文
+	config zerotier 'sample_config'
+	option enabled '1'
+	option config_path '/etc/zerotier'
+	option copy_config_path '1'
+
+service zerotier stop
+service zerotier restart
+moon服务器IP来自ddns动态域名的可以用脚本自动更新update_moon_zerotier.sh
+客户端更新，
+
+分发Moon文件zerotier客户端，将.moon文件复制到客户端的moons.d目录（路径因系统不同而异），并执行：
+加入
+zerotier-cli orbit <MoonID> <MoonID>#加入某个Moon节点
+更新
+zerotier-cli deorbit <MoonID>#离开某个Moon节点
+zerotier-cli orbit <MoonID> <MoonID>
+
+
+
+
+◆FORX !\WinPE\WinPE.INI,MyIni,1,LOAD %MyIni%  
+※ PECMD中的帮助--表示逆序搜索所有分区WinPE目录下的WinPE.INI，把搜索的第1个WinPE.INI用LOAD命令加载。
+
+https://a.nodeshare.xyz/uploads/2026/01/20260101.txt
+https://node.freev2raynode.com/uploads/2026/01/1-20260107.txt
+https://node.freeclashnode.com/uploads/2026/04/1-20260408.txt
+https://node.clashshare.cc/uploads/2026/04/0-20260408.txt
+http://mlfenx.cczzuu.top/node/20260214-v2ray.txt
